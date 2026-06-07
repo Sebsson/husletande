@@ -1,0 +1,12 @@
+# Exporterad bostadsdata (personlig – ska inte checkas in)
+husletande-data.json
+*-data.json
+
+# Lokala Claude-inställningar (kan innehålla maskinspecifika sökvägar/behörigheter)
+.claude/settings.local.json
+
+# OS-skräp
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
