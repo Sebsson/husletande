@@ -5,6 +5,9 @@ husletande-data.json
 # Lokala Claude-inställningar (kan innehålla maskinspecifika sökvägar/behörigheter)
 .claude/settings.local.json
 
+# Oavsiktlig klon av repot i en undermapp
+husletande/
+
 # OS-skräp
 Thumbs.db
 ehthumbs.db
