@@ -4,31 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Husletande — Vårt bostadssök</title>
-<script src="tailwind.js"></script>
+<!-- Förkompilerad Tailwind (statisk, ingen runtime — fungerar offline och kan inte blockeras av webbläsartillägg) -->
+<link rel="stylesheet" href="tailwind.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        fontFamily: {
-          serif: ['Fraunces', 'serif'],
-          sans: ['Inter', 'system-ui', 'sans-serif'],
-        },
-        colors: {
-          cream: '#F7F4EE',
-          card: '#FFFDF9',
-          forest: { DEFAULT: '#1F3A2E', light: '#2F5343', dark: '#16291F' },
-          clay: '#B5694A',
-          sand: '#E8E1D4',
-          ink: '#2A2823',
-          muted: '#7A766C',
-        }
-      }
-    }
-  }
-</script>
 <style>
   body { background-color: #F7F4EE; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
