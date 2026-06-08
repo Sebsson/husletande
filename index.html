@@ -62,8 +62,10 @@
     background:var(--cream); padding:10px 0 12px; margin-bottom:4px}
   .progress-row{display:flex;align-items:center;gap:12px}
   .progress-label{font-size:13px;font-weight:600;color:var(--forest);white-space:nowrap}
-  .bar{flex:1;height:9px;background:var(--sand);border-radius:99px;overflow:hidden}
-  .bar > i{display:block;height:100%;background:var(--clay);border-radius:99px;width:0;transition:width .3s ease}
+  .bar{flex:1;height:10px;background:var(--sand);border-radius:99px;overflow:hidden;display:flex}
+  .bar > i{display:block;height:100%;width:0;transition:width .3s ease}
+  #prog-ok{background:var(--forest)}
+  #prog-prob{background:var(--clay)}
   .reset-btn{background:none;border:1px solid var(--sand);color:var(--muted);font-size:12px;
     font-weight:500;padding:6px 12px;border-radius:99px;cursor:pointer;white-space:nowrap;font-family:inherit}
   .reset-btn:hover{border-color:var(--clay);color:var(--clay)}
@@ -76,19 +78,25 @@
   .group-head h3{font-size:17px;font-weight:600;flex:1}
   .group-count{font-size:12.5px;color:var(--muted);font-weight:500}
 
-  .item{display:flex;gap:13px;align-items:flex-start;padding:12px 12px;border-radius:12px;cursor:pointer;
-    user-select:none;position:relative}
+  .item{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border-radius:12px;position:relative}
   .item + .item{border-top:1px solid color-mix(in srgb,var(--sand) 60%,transparent)}
-  .item:active{background:var(--cream)}
-  @media(hover:hover){.item:hover{background:var(--cream)}}
-  .item input{position:absolute;opacity:0;width:0;height:0}
-  .box{width:24px;height:24px;border:2px solid #cfc8b9;border-radius:7px;flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;background:var(--card);transition:.15s;margin-top:1px}
-  .box svg{opacity:0;transform:scale(.5);transition:.15s;color:#fff}
-  .item input:checked ~ .box{background:var(--forest);border-color:var(--forest)}
-  .item input:checked ~ .box svg{opacity:1;transform:scale(1)}
-  .item-text{font-size:15px;line-height:1.4;flex:1;padding-top:2px}
-  .item input:checked ~ .item-text{color:var(--muted);text-decoration:line-through}
+  .pills{display:flex;gap:5px;flex-shrink:0;margin-top:1px}
+  .chk-pill{min-width:30px;padding:6px 7px;border-radius:8px;border:1.5px solid var(--sand);
+    background:var(--card);color:var(--muted);font-family:inherit;font-size:12px;font-weight:700;line-height:1;
+    cursor:pointer;transition:.13s}
+  .chk-pill:hover{border-color:#cfc8b9}
+  .chk-ok.is-on{background:var(--forest);border-color:var(--forest);color:#fff}
+  .chk-prob.is-on{background:var(--clay);border-color:var(--clay);color:#fff}
+  .item-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .item-text{font-size:15px;line-height:1.4;padding-top:3px}
+  .item.is-ok .item-text{color:var(--muted)}
+  .chk-note{width:100%;background:none;border:none;border-bottom:1px dashed transparent;
+    font-family:inherit;font-size:13px;color:var(--muted);padding:2px 0;outline:none}
+  .chk-note::placeholder{color:color-mix(in srgb,var(--muted) 55%,transparent)}
+  .chk-note:hover{border-bottom-color:var(--sand)}
+  .chk-note:focus{border-bottom-color:var(--clay);color:var(--ink)}
+  .chk-note.has-val{color:var(--ink)}
+  .prog-flag{color:var(--clay);font-weight:600}
   .item-del{opacity:0;background:none;border:none;color:var(--clay);font-size:20px;cursor:pointer;
     padding:0 4px;line-height:1;align-self:center}
   .item:hover .item-del,.item:focus-within .item-del{opacity:.7}
@@ -196,7 +204,7 @@
     <div class="progress-wrap">
       <div class="progress-row">
         <span class="progress-label" id="prog-label">0 / 0</span>
-        <div class="bar"><i id="prog-bar"></i></div>
+        <div class="bar"><i id="prog-ok"></i><i id="prog-prob"></i></div>
         <button class="reset-btn" onclick="resetChecklist()">Nollställ</button>
       </div>
     </div>
@@ -213,7 +221,7 @@
 
     <div class="stats">
       <div class="stat dark"><div class="num">10 %</div><div class="lbl">Minsta kontantinsats — resten lånar ni (bolånetak 90 %).</div></div>
-      <div class="stat light"><div class="num">10 %</div><div class="lbl">Handpenning som vanligtvis betalas vid kontraktsskrivning.</div></div>
+      <div class="stat light"><div class="num">1,5 %</div><div class="lbl">Stämpelskatt för lagfart vid husköp (+ ev. pantbrev 2 %).</div></div>
       <div class="stat light"><div class="num">1–3 %</div><div class="lbl">Amorteringskrav per år, beroende på belåningsgrad och skuldkvot.</div></div>
       <div class="stat clay"><div class="num">22 %</div><div class="lbl">Vinstskatt vid framtida försäljning (på reavinsten).</div></div>
     </div>
@@ -227,7 +235,7 @@
           <ol class="timeline">
             <li><span class="tl-num">1</span><span><b>Lånelöfte</b> från banken — vet er budget innan ni börjar.</span></li>
             <li><span class="tl-num">2</span><span><b>Visningar</b> — använd checklistan och anteckna.</span></li>
-            <li><span class="tl-num">3</span><span><b>Granska underlag</b> — årsredovisning, stadgar, energideklaration.</span></li>
+            <li><span class="tl-num">3</span><span><b>Granska underlag</b> — besiktningsprotokoll, energideklaration, servitut/pantbrev.</span></li>
             <li><span class="tl-num">4</span><span><b>Budgivning</b> — sätt en smärtgräns i förväg och håll er till den.</span></li>
             <li><span class="tl-num">5</span><span><b>Kontrakt</b> + handpenning (oftast 10 %).</span></li>
             <li><span class="tl-num last">6</span><span><b>Tillträde</b> — slutbetalning, nycklar, in i nya hemmet!</span></li>
@@ -237,11 +245,11 @@
         <div class="panel flags">
           <h3>⚠ Röda flaggor</h3>
           <ul>
-            <li>Hög skuldsättning i föreningen (&gt; ~15 000 kr/kvm)</li>
-            <li>Planerat stambyte utan avsatta medel</li>
-            <li>Många korttidsuthyrningar eller lokaler i föreningen</li>
-            <li>Avgiften känns ovanligt låg (kan höjas snart)</li>
-            <li>Fukt-, mögel- eller lukttecken</li>
+            <li>Gammalt tak eller eftersatt dränering (dyra åtgärder)</li>
+            <li>Fukt-, mögel- eller lukttecken, särskilt i källare/krypgrund</li>
+            <li>Sprickor eller tecken på sättningar i grund/fasad</li>
+            <li>Enskilt avlopp som inte uppfyller dagens krav</li>
+            <li>Till-/ombyggnad utan bygglov (svartbygge)</li>
             <li>Säljaren undviker raka svar om kända fel</li>
           </ul>
         </div>
@@ -280,18 +288,24 @@
    ============================================================ */
 const CHECKLIST = [
   { emoji:'🌤️', title:'Läge & första intryck', items:[
-    'Vilket väderstreck — sol på balkong/uteplats och inne?',
+    'Vilket väderstreck — sol på tomt, uteplats och inne?',
     'Ljusinsläpp vid den tid på dygnet ni faktiskt är hemma',
-    'Ljudnivå från grannar, trapphus och gata',
-    'Utsikt och insyn från fönstren',
+    'Ljudnivå från grannar, gata och trafik',
+    'Utsikt och insyn från fönster och tomt',
     'Närhet till kollektivtrafik, affärer och skola',
   ]},
-  { emoji:'💧', title:'Skick & fukt', items:[
-    'Fukt, mögel eller lukt i badrum, kök och ev. källare',
+  { emoji:'🏠', title:'Tak, fasad & grund', items:[
+    'Takets ålder och skick — när lades det om senast?',
+    'Fasad och fönster — skick, isolering, kondens mellan glasen?',
+    'Fukt och dränering i grund, källare eller krypgrund',
     'Fläckar eller bubblor på väggar/tak (tecken på vattenskada)',
+    'Sprickor i grund/fasad eller tecken på sättningar',
+  ]},
+  { emoji:'💧', title:'Skick & fukt inne', items:[
+    'Fukt, mögel eller lukt i badrum, kök, källare och tvättstuga',
     'Skick på golv, väggar, lister och dörrar',
-    'Skick och ålder på fönster — kondens mellan glasen?',
     'Ventilation — drar det, känns luften instängd?',
+    'Radonmätning gjord — och vad visade den?',
   ]},
   { emoji:'🚿', title:'Kök & badrum', items:[
     'Testa vattentrycket i dusch och kranar',
@@ -300,26 +314,25 @@ const CHECKLIST = [
     'När renoverades badrummet senast — finns tätskiktsintyg?',
     'Kvitton/intyg på senaste renoveringar',
   ]},
-  { emoji:'📦', title:'Förråd & gemensamt', items:[
-    'Förråd — finns det, var ligger det och vilket skick?',
-    'Tvättstuga eller egen tvättmaskin',
-    'Cykelrum och barnvagnsrum',
-    'Parkering eller laddstolpe för bil',
-    'Hiss och trapphusets skick',
+  { emoji:'⚙️', title:'Teknik & installationer', items:[
+    'Värmesystem (värmepump/fjärrvärme/el) — typ, ålder, driftkostnad',
+    'Elsystem — ålder, jordfelsbrytare och elcentral',
+    'Vatten & avlopp — kommunalt eller enskilt (egen brunn/avlopp)?',
+    'Energideklaration och uppvärmningskostnad per år',
+  ]},
+  { emoji:'🌳', title:'Garage, förråd & tomt', items:[
+    'Garage, carport och förråd — finns och skick?',
+    'Parkering / laddstolpe för elbil',
+    'Tomtens storlek, gränser, häckar och staket',
+    'Snöröjning, sophämtning och vägunderhåll (samfällighet/vägförening?)',
   ]},
   { emoji:'🗣️', title:'Frågor till mäklare/säljare', items:[
     'Fråga om dolda fel och tidigare problem',
     'Varför säljer de — och hur länge har de bott här?',
-    'Hur ser intresset ut / finns budgivare redan?',
-    'Vad ingår i köpet (vitvaror, gardiner, förråd)?',
+    'Bygglov för till-/ombyggnader (altan, inglasning, attefall)?',
+    'Servitut, samfällighet eller planerade byggen i närområdet?',
+    'Vad ingår i köpet (vitvaror, markis, förråd)?',
     'Mobiltäckning och bredband/fiber',
-  ]},
-  { emoji:'📄', title:'Bostadsrättsföreningen', items:[
-    'Kommande avgiftshöjningar?',
-    'Planerade renoveringar (stambyte, fasad, tak, hiss)?',
-    'Föreningens skuldsättning per kvm',
-    'Stämningar eller tvister i föreningen?',
-    'Tillåts andrahandsuthyrning, husdjur och renovering?',
   ]},
 ];
 
@@ -328,8 +341,16 @@ const CHECKLIST = [
    ============================================================ */
 const LS_KEY = 'husletande_visning_v1';
 function loadState(){
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {checked:{}, custom:[]}; }
-  catch(e){ return {checked:{}, custom:[]}; }
+  let s;
+  try { s = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ s = {}; }
+  s.status = s.status || {};               // { id: 'ok' | 'problem' }
+  s.notes  = s.notes  || {};               // { id: 'anteckning' }
+  s.custom = Array.isArray(s.custom) ? s.custom : [];
+  if(s.checked){                           // migrera gammalt boolean-fält (bockad → 'ok')
+    for(const k in s.checked){ if(s.checked[k] && !s.status[k]) s.status[k] = 'ok'; }
+    delete s.checked;
+  }
+  return s;
 }
 function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(store)); }catch(e){} }
 let store = loadState();
@@ -343,22 +364,29 @@ function allGroups(){
     items: store.custom.map(c=>({id:c.id, text:c.text})) }]);
 }
 
-const CHECK_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 6"/></svg>';
-
 function renderChecklist(){
   const groups = allGroups();
   const el = document.getElementById('checklist');
   el.innerHTML = groups.map((g, gi)=>{
     const isCustom = !!g.custom;
     const items = isCustom ? g.items : g.items.map((t, ii)=>({ id:'g'+gi+'_'+ii, text:t }));
-    const done = items.filter(it=>store.checked[it.id]).length;
-    const rows = items.map(it=>`
-      <label class="item">
-        <input type="checkbox" ${store.checked[it.id]?'checked':''} onchange="toggleItem('${it.id}')">
-        <span class="box">${CHECK_SVG}</span>
-        <span class="item-text">${esc(it.text)}</span>
-        ${isCustom?`<button class="item-del" title="Ta bort" onclick="event.preventDefault();removeCustom('${it.id}')">&times;</button>`:''}
-      </label>`).join('');
+    const done = items.filter(it=>store.status[it.id]).length;
+    const rows = items.map(it=>{
+      const st = store.status[it.id]; const note = store.notes[it.id] || '';
+      return `
+      <div class="item ${st==='ok'?'is-ok':st==='problem'?'is-problem':''}">
+        <div class="pills">
+          <button type="button" class="chk-pill chk-ok ${st==='ok'?'is-on':''}" onclick="setStatus('${it.id}','ok')" title="OK / inget att anmärka">OK</button>
+          <button type="button" class="chk-pill chk-prob ${st==='problem'?'is-on':''}" onclick="setStatus('${it.id}','problem')" title="Problem / att bevaka">!</button>
+        </div>
+        <div class="item-main">
+          <span class="item-text">${esc(it.text)}</span>
+          <input class="chk-note ${note?'has-val':''}" value="${esc(note)}" placeholder="Anteckning…" autocomplete="off"
+            oninput="this.classList.toggle('has-val',!!this.value)" onchange="updateNote('${it.id}',this.value)">
+        </div>
+        ${isCustom?`<button class="item-del" title="Ta bort" onclick="removeCustom('${it.id}')">&times;</button>`:''}
+      </div>`;
+    }).join('');
     return `<div class="group">
       <div class="group-head">
         <span class="group-emoji">${g.emoji}</span>
@@ -378,21 +406,28 @@ function renderChecklist(){
 
 function updateProgress(){
   const groups = allGroups();
-  let total=0, done=0;
+  let total=0, done=0, problems=0;
   groups.forEach((g, gi)=>{
     const items = g.custom ? g.items : g.items.map((t,ii)=>({id:'g'+gi+'_'+ii}));
-    items.forEach(it=>{ total++; if(store.checked[it.id]) done++; });
+    items.forEach(it=>{ total++; const st=store.status[it.id]; if(st) done++; if(st==='problem') problems++; });
   });
-  document.getElementById('prog-label').textContent = done + ' / ' + total;
-  document.getElementById('prog-bar').style.width = (total? (done/total*100):0) + '%';
+  document.getElementById('prog-label').innerHTML = done + ' / ' + total
+    + (problems ? ' <span class="prog-flag">· ' + problems + ' att bevaka</span>' : '');
+  const ok = done - problems;
+  document.getElementById('prog-ok').style.width   = (total ? ok/total*100 : 0) + '%';
+  document.getElementById('prog-prob').style.width = (total ? problems/total*100 : 0) + '%';
 }
 
-function toggleItem(id){
-  store.checked[id] = !store.checked[id];
-  if(!store.checked[id]) delete store.checked[id];
+function setStatus(id, status){
+  if(store.status[id] === status) delete store.status[id];  // klick på aktivt läge → "ej kollat"
+  else store.status[id] = status;
   saveState();
-  // light update: just re-render counts/progress without rebuilding inputs
   renderChecklist();
+}
+
+function updateNote(id, val){
+  if(val) store.notes[id] = val; else delete store.notes[id];
+  saveState();  // ingen re-render — behåll fokus i fältet
 }
 
 function addCustom(e){
@@ -409,14 +444,16 @@ function addCustom(e){
 
 function removeCustom(id){
   store.custom = store.custom.filter(c=>c.id!==id);
-  delete store.checked[id];
+  delete store.status[id];
+  delete store.notes[id];
   saveState();
   renderChecklist();
 }
 
 function resetChecklist(){
-  if(!confirm('Nollställ alla bockar inför nästa visning? Egna punkter behålls.')) return;
-  store.checked = {};
+  if(!confirm('Nollställ lägen och anteckningar inför nästa visning? Egna punkter behålls.')) return;
+  store.status = {};
+  store.notes = {};
   saveState();
   renderChecklist();
 }
@@ -431,16 +468,18 @@ const GUIDE_SECTIONS = [
         <li><b>Kontantinsats:</b> minst 10 % av priset måste vara eget kapital (bolånetaket höjdes 2025 så att max 90 % får lånas — tidigare 85 %).</li>
         <li><b>Amorteringskrav:</b> lån över 70 % av värdet amorteras 2 %/år, 50–70 % amorteras 1 %/år. Hög skuldkvot (lån &gt; 4,5× årsinkomst) ger +1 % extra.</li>
         <li><b>Kalkylränta:</b> banken stresstestar er ekonomi mot en betydligt högre ränta än dagens (ofta 6–8 %). Räkna själva på samma sätt.</li>
-        <li><b>Glöm inte löpande kostnader:</b> månadsavgift, drift, el, försäkring, underhåll och eventuell ränteuppgång.</li>
+        <li><b>Glöm inte löpande kostnader:</b> drift (el, vatten, sophämtning, uppvärmning), villaförsäkring, fastighetsavgift, löpande underhåll och eventuell ränteuppgång.</li>
       </ul>` },
-  { emoji:'📄', title:'2. Granska bostadsrättsföreningen',
-    body:`<p>Köper ni en bostadsrätt köper ni en andel i en förening — föreningens ekonomi blir er ekonomi.</p>
+  { emoji:'📄', title:'2. Granska huset & fastigheten',
+    body:`<p>Vid äganderätt ansvarar ni för hela huset själva — de dyra posterna är tak, fasad, grund och installationer. Granska underlaget noga innan ni budar.</p>
       <ul>
-        <li><b>Årsredovisningen:</b> titta på skuldsättning per kvm, kassaflöde och om avgifterna täcker kostnaderna. Skuld över ca 15 000 kr/kvm är en varningssignal.</li>
-        <li><b>Underhållsplan:</b> finns avsatta pengar för stambyte, tak, fasad, hiss? Ett stambyte kan höja avgiften rejält.</li>
-        <li><b>Stadgar:</b> tillåts uthyrning i andra hand, husdjur, renovering? Andelstal och vad avgiften inkluderar.</li>
-        <li><b>Äkta vs oäkta förening:</b> en "oäkta" förening kan ge sämre skattevillkor — fråga mäklaren.</li>
-        <li><b>Stämningar/tvister</b> och planerade avgiftshöjningar — fråga rakt ut.</li>
+        <li><b>Överlåtelsebesiktning:</b> be om säljarens besiktningsprotokoll eller beställ en egen. Den täcker inte allt — be om utökad besiktning av t.ex. fukt och tak vid behov.</li>
+        <li><b>De dyra posterna:</b> ålder och skick på tak, fasad, fönster, dränering och grund/krypgrund. En takomläggning eller dränering kan kosta hundratusentals kronor.</li>
+        <li><b>Installationer:</b> värmesystem (värmepump/fjärrvärme/el), elsystem, samt vatten & avlopp — <b>kommunalt eller enskilt</b>? Egen brunn och enskilt avlopp kan kräva dyra uppgraderingar.</li>
+        <li><b>Energideklaration:</b> visar energiklass och uppvärmningskostnad — en bra indikator på driftkostnaden.</li>
+        <li><b>Tomten:</b> gränser, servitut (t.ex. väg eller brunn), samfällighet/vägförening och eventuell tomträtt (arrende i stället för att äga marken).</li>
+        <li><b>Bygglov & ritningar:</b> är till-/ombyggnader (altan, inglasning, attefall) bygglovade och slutbesiktigade? Svartbyggen blir ert ansvar.</li>
+        <li><b>Pantbrev & lagfart</b> — kontrollera befintliga pantbrev; nya kostar 2 % i stämpelskatt.</li>
       </ul>` },
   { emoji:'🔍', title:'3. På visningen',
     body:`<p>Var systematiska — använd <b>checklistan</b> på varje visning. Det viktigaste:</p>
@@ -448,9 +487,9 @@ const GUIDE_SECTIONS = [
         <li>Fukt och lukt i badrum, kök, källare och vid fönster.</li>
         <li>Vattentryck, avlopp och ventilation — testa kranar och spola.</li>
         <li>Väderstreck och ljusinsläpp vid olika tider på dygnet.</li>
-        <li>Ljudnivå från grannar, trapphus och gata.</li>
-        <li>Skick på fönster, vitvaror, el och eventuell egen värmekälla.</li>
-        <li>Förråd, tvättstuga, cykelrum, parkering/laddstolpe.</li>
+        <li>Ljudnivå från grannar, gata och trafik.</li>
+        <li>Skick på tak, fasad, fönster, vitvaror, el och värmesystem.</li>
+        <li>Garage, carport, förråd, tomt och parkering/laddstolpe.</li>
         <li>Ta egna bilder och anteckna direkt — minnet sviker efter tre visningar.</li>
       </ul>` },
   { emoji:'🔨', title:'4. Budgivning — reglerna',
@@ -465,25 +504,28 @@ const GUIDE_SECTIONS = [
   { emoji:'🛡️', title:'5. Undersökningsplikt & dolda fel',
     body:`<p>Som köpare har ni en långtgående <b>undersökningsplikt</b>. Det ni borde ha upptäckt vid en noggrann undersökning kan ni inte klaga på i efterhand.</p>
       <ul>
-        <li><b>Villa/hus:</b> anlita gärna en <b>besiktningsman</b> före köp. Ansvaret för dolda fel är större vid husköp (säljaren ansvarar i upp till 10 år för verkligt dolda fel).</li>
-        <li><b>Bostadsrätt:</b> säljarens felansvar är mer begränsat — desto viktigare att ni själva granskar noga.</li>
+        <li>Anlita gärna en <b>besiktningsman</b> före köp och gå med på besiktningen. Säljaren ansvarar i upp till <b>10 år</b> för verkligt dolda fel — men bara sådant ni <i>inte</i> borde ha upptäckt själva.</li>
+        <li>En vanlig överlåtelsebesiktning är okulär. Misstänker ni fukt, mögel eller problem med tak/dränering — beställ <b>utökad besiktning</b> av just det.</li>
         <li>Ställ frågor skriftligt och spara svaren. Det säljaren lovar muntligt är svårt att bevisa.</li>
-        <li>Överväg en <b>dolda fel-försäkring</b> (gäller främst hus).</li>
+        <li>Överväg en <b>dolda fel-försäkring</b> — säljaren tecknar den ofta, men kontrollera vad den faktiskt täcker.</li>
       </ul>` },
   { emoji:'✍️', title:'6. Kontrakt & tillträde',
     body:`<p>När ni är överens skrivs köpekontraktet — det är då affären blir bindande.</p>
       <ul>
         <li><b>Handpenning</b> på vanligen 10 % betalas vid kontrakt, ofta till mäklarens klientmedelskonto.</li>
         <li>Ni kan lägga in <b>villkor/förbehåll</b> i kontraktet, t.ex. besiktningsklausul eller "med förbehåll för lånelöfte".</li>
-        <li><b>Tillträdesdagen:</b> resten av köpeskillingen betalas, ni får nycklarna och en <b>likvidavräkning</b> görs (avgifter/kostnader fördelas).</li>
-        <li>För bostadsrätt krävs att föreningen <b>godkänner er som medlemmar</b>.</li>
-        <li>Teckna <b>hemförsäkring</b> (+ villaförsäkring för hus) från tillträdesdagen.</li>
+        <li><b>Tillträdesdagen:</b> resten av köpeskillingen betalas, ni får nycklarna och en <b>likvidavräkning</b> görs (kostnader fördelas mellan säljare och köpare).</li>
+        <li>Efter tillträde ansöker ni om <b>lagfart</b> hos Lantmäteriet (stämpelskatt 1,5 % av priset) — det är beviset på att ni äger fastigheten.</li>
+        <li>Teckna <b>villa-/hemförsäkring</b> från tillträdesdagen — banken kräver oftast det för att betala ut lånet.</li>
       </ul>` },
-  { emoji:'🏡', title:'7. Bostadsrätt vs villa',
-    body:`<ul>
-        <li><b>Bostadsrätt:</b> ni äger andel i förening, betalar månadsavgift, föreningen sköter yttre underhåll. Mindre eget ansvar men beroende av föreningens ekonomi.</li>
-        <li><b>Villa/radhus (äganderätt):</b> ni äger fastigheten själva, betalar <b>fastighetsavgift</b> i stället för avgift, men ansvarar för allt underhåll. Ofta <b>pantbrev</b> och lagfart att hålla koll på.</li>
-        <li><b>Lagfart & stämpelskatt:</b> vid husköp tillkommer lagfartskostnad (stämpelskatt 1,5 % av priset) + ev. pantbrevskostnad (2 %). Budgetera för det.</li>
+  { emoji:'🏡', title:'7. Att äga ett hus (äganderätt)',
+    body:`<p>Med äganderätt äger ni både byggnaden och marken — full frihet, men också fullt ansvar.</p>
+      <ul>
+        <li><b>Eget underhållsansvar:</b> tak, fasad, värme, vatten/avlopp och tomt är era kostnader. Lägg undan en buffert för oväntat underhåll varje år.</li>
+        <li><b>Fastighetsavgift</b> i stället för månadsavgift — kommunal fastighetsavgift för småhus har ett takbelopp som justeras årligen.</li>
+        <li><b>Pantbrev & lagfart:</b> lagfarten bevisar ägandet; pantbrev används som säkerhet för bolånet. Kolla vilka pantbrev som redan finns — nya kostar 2 % i stämpelskatt.</li>
+        <li><b>Lagfart & stämpelskatt:</b> vid köpet tillkommer stämpelskatt 1,5 % av priset för lagfarten. Budgetera för det utöver kontantinsatsen.</li>
+        <li><b>Tomträtt?</b> I vissa fall arrenderar man marken av kommunen i stället för att äga den — då tillkommer en årlig tomträttsavgäld. Fråga om det gäller.</li>
       </ul>` },
   { emoji:'🧾', title:'8. Skatt & avdrag',
     body:`<ul>
