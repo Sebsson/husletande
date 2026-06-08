@@ -2,11 +2,532 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=husletande.html">
-<title>Husletande</title>
-<script>location.replace('husletande.html');</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1F3A2E">
+<title>Husletande — Visning & inför köpet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F7F4EE; --card:#FFFDF9; --forest:#1F3A2E; --forest-light:#2F5343;
+    --clay:#B5694A; --sand:#E8E1D4; --ink:#2A2823; --muted:#7A766C;
+    --shadow:0 1px 2px rgba(42,40,35,.06), 0 4px 16px rgba(42,40,35,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--cream); color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    padding-bottom:calc(72px + env(safe-area-inset-bottom)); /* space for bottom nav */
+  }
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif; color:var(--forest); margin:0; line-height:1.15;}
+  b{color:var(--forest)}
+  a{color:var(--forest)}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#cfc8b9;border-radius:8px}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:20;
+    background:rgba(247,244,238,.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--sand);
+    padding:env(safe-area-inset-top) 0 0;
+  }
+  .head-inner{max-width:880px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:12px}
+  .logo{width:40px;height:40px;border-radius:12px;background:var(--forest);color:var(--cream);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--shadow)}
+  .head-inner h1{font-size:20px;font-weight:600}
+  .head-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+
+  /* ---------- layout ---------- */
+  main{max-width:880px; margin:0 auto; padding:20px 18px 40px}
+  .page{display:none; animation:fade .22s ease}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .page-head{margin-bottom:18px}
+  .page-head h2{font-size:27px;font-weight:600}
+  .page-head p{color:var(--muted);font-size:14px;margin:6px 0 0}
+
+  /* ---------- tip banner ---------- */
+  .tip{display:flex;gap:11px;align-items:flex-start;background:var(--forest);color:var(--cream);
+    border-radius:16px;padding:14px 16px;font-size:13.5px;margin-bottom:18px;line-height:1.45}
+  .tip svg{flex-shrink:0;margin-top:1px}
+  .tip b{color:#fff}
+
+  /* ---------- progress ---------- */
+  .progress-wrap{position:sticky; top:calc(env(safe-area-inset-top) + 69px); z-index:10;
+    background:var(--cream); padding:10px 0 12px; margin-bottom:4px}
+  .progress-row{display:flex;align-items:center;gap:12px}
+  .progress-label{font-size:13px;font-weight:600;color:var(--forest);white-space:nowrap}
+  .bar{flex:1;height:9px;background:var(--sand);border-radius:99px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:var(--clay);border-radius:99px;width:0;transition:width .3s ease}
+  .reset-btn{background:none;border:1px solid var(--sand);color:var(--muted);font-size:12px;
+    font-weight:500;padding:6px 12px;border-radius:99px;cursor:pointer;white-space:nowrap;font-family:inherit}
+  .reset-btn:hover{border-color:var(--clay);color:var(--clay)}
+
+  /* ---------- checklist ---------- */
+  .group{background:var(--card);border:1px solid var(--sand);border-radius:18px;
+    padding:6px 6px 8px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .group-head{display:flex;align-items:center;gap:11px;padding:12px 12px 8px}
+  .group-emoji{font-size:21px;line-height:1}
+  .group-head h3{font-size:17px;font-weight:600;flex:1}
+  .group-count{font-size:12.5px;color:var(--muted);font-weight:500}
+
+  .item{display:flex;gap:13px;align-items:flex-start;padding:12px 12px;border-radius:12px;cursor:pointer;
+    user-select:none;position:relative}
+  .item + .item{border-top:1px solid color-mix(in srgb,var(--sand) 60%,transparent)}
+  .item:active{background:var(--cream)}
+  @media(hover:hover){.item:hover{background:var(--cream)}}
+  .item input{position:absolute;opacity:0;width:0;height:0}
+  .box{width:24px;height:24px;border:2px solid #cfc8b9;border-radius:7px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;background:var(--card);transition:.15s;margin-top:1px}
+  .box svg{opacity:0;transform:scale(.5);transition:.15s;color:#fff}
+  .item input:checked ~ .box{background:var(--forest);border-color:var(--forest)}
+  .item input:checked ~ .box svg{opacity:1;transform:scale(1)}
+  .item-text{font-size:15px;line-height:1.4;flex:1;padding-top:2px}
+  .item input:checked ~ .item-text{color:var(--muted);text-decoration:line-through}
+  .item-del{opacity:0;background:none;border:none;color:var(--clay);font-size:20px;cursor:pointer;
+    padding:0 4px;line-height:1;align-self:center}
+  .item:hover .item-del,.item:focus-within .item-del{opacity:.7}
+
+  .add-row{display:flex;gap:8px;padding:10px 12px 6px}
+  .add-row input{flex:1;background:var(--cream);border:1px solid var(--sand);border-radius:10px;
+    padding:9px 12px;font-size:14px;font-family:inherit;color:var(--ink)}
+  .add-row input:focus{outline:none;border-color:var(--forest);box-shadow:0 0 0 3px rgba(31,58,46,.15)}
+  .add-row button{background:var(--forest);color:var(--cream);border:none;border-radius:10px;
+    width:42px;font-size:22px;cursor:pointer;flex-shrink:0;line-height:1;font-family:inherit}
+  .add-row button:hover{background:var(--forest-light)}
+
+  /* ---------- guide / inför köpet ---------- */
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-bottom:24px}
+  .stat{border-radius:18px;padding:15px}
+  .stat .num{font-family:'Fraunces',serif;font-size:25px;font-weight:600}
+  .stat .lbl{font-size:11.5px;margin-top:5px;line-height:1.35}
+  .stat.dark{background:var(--forest);color:var(--cream)} .stat.dark .lbl{color:rgba(247,244,238,.82)}
+  .stat.clay{background:var(--clay);color:var(--cream)} .stat.clay .lbl{color:rgba(247,244,238,.85)}
+  .stat.light{background:var(--card);border:1px solid var(--sand)}
+  .stat.light .num{color:var(--forest)} .stat.light .lbl{color:var(--muted)}
+
+  details.acc{background:var(--card);border:1px solid var(--sand);border-radius:18px;
+    overflow:hidden;margin-bottom:11px;box-shadow:var(--shadow)}
+  details.acc summary{display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;
+    list-style:none;user-select:none}
+  details.acc summary::-webkit-details-marker{display:none}
+  details.acc summary:hover{background:var(--cream)}
+  .acc-emoji{font-size:20px;flex-shrink:0}
+  .acc-title{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--forest);flex:1;line-height:1.25}
+  .chev{width:20px;height:20px;color:var(--muted);flex-shrink:0;transition:transform .2s}
+  details.acc[open] .chev{transform:rotate(180deg)}
+  .acc-body{padding:2px 18px 18px;font-size:14.5px;line-height:1.6}
+  .acc-body p{margin:0 0 10px}
+  .acc-body ul{margin:8px 0 0;padding-left:20px}
+  .acc-body li{margin-bottom:8px}
+  .acc-body li::marker{color:var(--clay)}
+
+  .panel{background:var(--card);border:1px solid var(--sand);border-radius:18px;padding:18px 20px;
+    margin-top:20px;box-shadow:var(--shadow)}
+  .panel h3{font-size:18px;margin-bottom:12px}
+  .timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px}
+  .timeline li{display:flex;gap:13px;font-size:14px;line-height:1.4}
+  .tl-num{width:25px;height:25px;border-radius:99px;background:var(--forest);color:var(--cream);
+    font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .tl-num.last{background:var(--clay)}
+  .panel.flags{background:var(--cream);border:2px solid color-mix(in srgb,var(--clay) 30%,transparent)}
+  .panel.flags h3{color:var(--clay)}
+  .panel.flags ul{margin:0;padding-left:20px;font-size:14px}
+  .panel.flags li{margin-bottom:7px}.panel.flags li::marker{color:var(--clay)}
+  .links{list-style:none;margin:0;padding:0;font-size:14.5px}
+  .links li{margin-bottom:9px}
+  .links a{text-decoration:underline}
+  .links a:hover{color:var(--clay)}
+  .disclaimer{font-size:12.5px;color:var(--muted);margin-top:22px;line-height:1.5}
+
+  /* ---------- bottom nav ---------- */
+  nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;
+    background:rgba(255,253,249,.94);backdrop-filter:blur(10px);
+    border-top:1px solid var(--sand);
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+    display:flex;gap:8px;justify-content:center}
+  nav.tabs button{flex:1;max-width:200px;background:none;border:none;border-radius:14px;
+    padding:9px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;
+    color:var(--muted);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;transition:.15s}
+  nav.tabs button svg{width:23px;height:23px}
+  nav.tabs button.active{color:var(--forest);background:color-mix(in srgb,var(--forest) 8%,transparent)}
+
+  /* ---------- desktop ---------- */
+  @media(min-width:720px){
+    .stats{grid-template-columns:repeat(4,1fr)}
+    .guide-cols{display:grid;grid-template-columns:1.7fr 1fr;gap:22px;align-items:start}
+    .guide-cols .panel:first-child{margin-top:0}
+    .page-head h2{font-size:32px}
+  }
+</style>
 </head>
 <body>
-<p>Öppnar Husletande… om inget händer, <a href="husletande.html">klicka här</a>.</p>
+
+<header>
+  <div class="head-inner">
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+    </div>
+    <div>
+      <h1>Husletande</h1>
+      <div class="head-sub" id="head-sub">Checklista för visning</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============ PAGE 1: CHECKLISTA ============ -->
+  <section id="page-checklist" class="page active">
+    <div class="page-head">
+      <h2>Checklista för visning</h2>
+      <p>Bocka av medan ni går runt. Allt sparas i mobilen tills ni nollställer inför nästa visning.</p>
+    </div>
+
+    <div class="tip">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.5.4.8 1 .9 1.6l.1.7h6l.1-.7c.1-.6.4-1.2.9-1.6A7 7 0 0 0 12 2z"/></svg>
+      <span>Ta egna bilder och anteckna direkt — <b>minnet sviker efter tre visningar</b>. Fråga rakt ut om sådant du undrar över; mäklaren måste svara sanningsenligt.</span>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-row">
+        <span class="progress-label" id="prog-label">0 / 0</span>
+        <div class="bar"><i id="prog-bar"></i></div>
+        <button class="reset-btn" onclick="resetChecklist()">Nollställ</button>
+      </div>
+    </div>
+
+    <div id="checklist"></div>
+  </section>
+
+  <!-- ============ PAGE 2: INFÖR KÖPET ============ -->
+  <section id="page-guide" class="page">
+    <div class="page-head">
+      <h2>Inför köpet</h2>
+      <p>Råd, regler och saker att tänka på under bostadsjakten i Sverige. Allmän vägledning — dubbelkolla alltid aktuella siffror och villkor med er bank och mäklare.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat dark"><div class="num">10 %</div><div class="lbl">Minsta kontantinsats — resten lånar ni (bolånetak 90 %).</div></div>
+      <div class="stat light"><div class="num">10 %</div><div class="lbl">Handpenning som vanligtvis betalas vid kontraktsskrivning.</div></div>
+      <div class="stat light"><div class="num">1–3 %</div><div class="lbl">Amorteringskrav per år, beroende på belåningsgrad och skuldkvot.</div></div>
+      <div class="stat clay"><div class="num">22 %</div><div class="lbl">Vinstskatt vid framtida försäljning (på reavinsten).</div></div>
+    </div>
+
+    <div class="guide-cols">
+      <div id="guide-accordion"></div>
+
+      <aside>
+        <div class="panel">
+          <h3>Snabb tidslinje</h3>
+          <ol class="timeline">
+            <li><span class="tl-num">1</span><span><b>Lånelöfte</b> från banken — vet er budget innan ni börjar.</span></li>
+            <li><span class="tl-num">2</span><span><b>Visningar</b> — använd checklistan och anteckna.</span></li>
+            <li><span class="tl-num">3</span><span><b>Granska underlag</b> — årsredovisning, stadgar, energideklaration.</span></li>
+            <li><span class="tl-num">4</span><span><b>Budgivning</b> — sätt en smärtgräns i förväg och håll er till den.</span></li>
+            <li><span class="tl-num">5</span><span><b>Kontrakt</b> + handpenning (oftast 10 %).</span></li>
+            <li><span class="tl-num last">6</span><span><b>Tillträde</b> — slutbetalning, nycklar, in i nya hemmet!</span></li>
+          </ol>
+        </div>
+
+        <div class="panel flags">
+          <h3>⚠ Röda flaggor</h3>
+          <ul>
+            <li>Hög skuldsättning i föreningen (&gt; ~15 000 kr/kvm)</li>
+            <li>Planerat stambyte utan avsatta medel</li>
+            <li>Många korttidsuthyrningar eller lokaler i föreningen</li>
+            <li>Avgiften känns ovanligt låg (kan höjas snart)</li>
+            <li>Fukt-, mögel- eller lukttecken</li>
+            <li>Säljaren undviker raka svar om kända fel</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Bra länkar</h3>
+          <ul class="links">
+            <li><a href="https://www.konsumentverket.se/for-konsument/boende/kopa-bostad/" target="_blank" rel="noopener">Konsumentverket — köpa bostad</a></li>
+            <li><a href="https://www.fi.se/sv/privat/" target="_blank" rel="noopener">Finansinspektionen — bolåneregler</a></li>
+            <li><a href="https://www.maklarsamfundet.se/" target="_blank" rel="noopener">Mäklarsamfundet</a></li>
+            <li><a href="https://www.skatteverket.se/" target="_blank" rel="noopener">Skatteverket — skatt &amp; avdrag</a></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <p class="disclaimer">Informationen är en allmän sammanfattning och inte juridisk eller ekonomisk rådgivning. Regler och siffror ändras — stäm alltid av med er bank, mäklare och vid behov en jurist.</p>
+  </section>
+</main>
+
+<!-- ============ BOTTOM NAV ============ -->
+<nav class="tabs">
+  <button id="tab-checklist" class="active" onclick="setPage('checklist')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Checklista
+  </button>
+  <button id="tab-guide" onclick="setPage('guide')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Inför köpet
+  </button>
+</nav>
+
+<script>
+/* ============================================================
+   CHECKLIST DATA (default) — saker att kolla på en visning
+   ============================================================ */
+const CHECKLIST = [
+  { emoji:'🌤️', title:'Läge & första intryck', items:[
+    'Vilket väderstreck — sol på balkong/uteplats och inne?',
+    'Ljusinsläpp vid den tid på dygnet ni faktiskt är hemma',
+    'Ljudnivå från grannar, trapphus och gata',
+    'Utsikt och insyn från fönstren',
+    'Närhet till kollektivtrafik, affärer och skola',
+  ]},
+  { emoji:'💧', title:'Skick & fukt', items:[
+    'Fukt, mögel eller lukt i badrum, kök och ev. källare',
+    'Fläckar eller bubblor på väggar/tak (tecken på vattenskada)',
+    'Skick på golv, väggar, lister och dörrar',
+    'Skick och ålder på fönster — kondens mellan glasen?',
+    'Ventilation — drar det, känns luften instängd?',
+  ]},
+  { emoji:'🚿', title:'Kök & badrum', items:[
+    'Testa vattentrycket i dusch och kranar',
+    'Spola i toaletten och kontrollera avlopp',
+    'Ålder och skick på vitvaror',
+    'När renoverades badrummet senast — finns tätskiktsintyg?',
+    'Kvitton/intyg på senaste renoveringar',
+  ]},
+  { emoji:'📦', title:'Förråd & gemensamt', items:[
+    'Förråd — finns det, var ligger det och vilket skick?',
+    'Tvättstuga eller egen tvättmaskin',
+    'Cykelrum och barnvagnsrum',
+    'Parkering eller laddstolpe för bil',
+    'Hiss och trapphusets skick',
+  ]},
+  { emoji:'🗣️', title:'Frågor till mäklare/säljare', items:[
+    'Fråga om dolda fel och tidigare problem',
+    'Varför säljer de — och hur länge har de bott här?',
+    'Hur ser intresset ut / finns budgivare redan?',
+    'Vad ingår i köpet (vitvaror, gardiner, förråd)?',
+    'Mobiltäckning och bredband/fiber',
+  ]},
+  { emoji:'📄', title:'Bostadsrättsföreningen', items:[
+    'Kommande avgiftshöjningar?',
+    'Planerade renoveringar (stambyte, fasad, tak, hiss)?',
+    'Föreningens skuldsättning per kvm',
+    'Stämningar eller tvister i föreningen?',
+    'Tillåts andrahandsuthyrning, husdjur och renovering?',
+  ]},
+];
+
+/* ============================================================
+   STATE — checked items + custom items, persisted locally
+   ============================================================ */
+const LS_KEY = 'husletande_visning_v1';
+function loadState(){
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {checked:{}, custom:[]}; }
+  catch(e){ return {checked:{}, custom:[]}; }
+}
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(store)); }catch(e){} }
+let store = loadState();
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- build the groups (default + a custom "Egna punkter") ---------- */
+function allGroups(){
+  return CHECKLIST.concat([{ emoji:'✏️', title:'Egna punkter', custom:true,
+    items: store.custom.map(c=>({id:c.id, text:c.text})) }]);
+}
+
+const CHECK_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 6"/></svg>';
+
+function renderChecklist(){
+  const groups = allGroups();
+  const el = document.getElementById('checklist');
+  el.innerHTML = groups.map((g, gi)=>{
+    const isCustom = !!g.custom;
+    const items = isCustom ? g.items : g.items.map((t, ii)=>({ id:'g'+gi+'_'+ii, text:t }));
+    const done = items.filter(it=>store.checked[it.id]).length;
+    const rows = items.map(it=>`
+      <label class="item">
+        <input type="checkbox" ${store.checked[it.id]?'checked':''} onchange="toggleItem('${it.id}')">
+        <span class="box">${CHECK_SVG}</span>
+        <span class="item-text">${esc(it.text)}</span>
+        ${isCustom?`<button class="item-del" title="Ta bort" onclick="event.preventDefault();removeCustom('${it.id}')">&times;</button>`:''}
+      </label>`).join('');
+    return `<div class="group">
+      <div class="group-head">
+        <span class="group-emoji">${g.emoji}</span>
+        <h3>${esc(g.title)}</h3>
+        <span class="group-count">${done}/${items.length}</span>
+      </div>
+      ${rows || '<p style="padding:4px 14px 8px;color:var(--muted);font-size:14px">Lägg till egna saker att kolla på.</p>'}
+      ${isCustom?`
+      <form class="add-row" onsubmit="addCustom(event)">
+        <input id="custom-input" placeholder="Lägg till egen punkt…" autocomplete="off">
+        <button type="submit" aria-label="Lägg till">+</button>
+      </form>`:''}
+    </div>`;
+  }).join('');
+  updateProgress();
+}
+
+function updateProgress(){
+  const groups = allGroups();
+  let total=0, done=0;
+  groups.forEach((g, gi)=>{
+    const items = g.custom ? g.items : g.items.map((t,ii)=>({id:'g'+gi+'_'+ii}));
+    items.forEach(it=>{ total++; if(store.checked[it.id]) done++; });
+  });
+  document.getElementById('prog-label').textContent = done + ' / ' + total;
+  document.getElementById('prog-bar').style.width = (total? (done/total*100):0) + '%';
+}
+
+function toggleItem(id){
+  store.checked[id] = !store.checked[id];
+  if(!store.checked[id]) delete store.checked[id];
+  saveState();
+  // light update: just re-render counts/progress without rebuilding inputs
+  renderChecklist();
+}
+
+function addCustom(e){
+  e.preventDefault();
+  const inp = document.getElementById('custom-input');
+  const text = inp.value.trim();
+  if(!text) return;
+  store.custom.push({ id:'c_'+uid(), text });
+  saveState();
+  renderChecklist();
+  // refocus the (newly rendered) input for quick multi-add
+  const ni = document.getElementById('custom-input'); if(ni) ni.focus();
+}
+
+function removeCustom(id){
+  store.custom = store.custom.filter(c=>c.id!==id);
+  delete store.checked[id];
+  saveState();
+  renderChecklist();
+}
+
+function resetChecklist(){
+  if(!confirm('Nollställ alla bockar inför nästa visning? Egna punkter behålls.')) return;
+  store.checked = {};
+  saveState();
+  renderChecklist();
+}
+
+/* ============================================================
+   GUIDE / INFÖR KÖPET
+   ============================================================ */
+const GUIDE_SECTIONS = [
+  { emoji:'💰', title:'1. Ekonomin på plats först',
+    body:`<p>Skaffa ett <b>lånelöfte</b> innan ni börjar buda — då vet ni er övre gräns och kan agera snabbt.</p>
+      <ul>
+        <li><b>Kontantinsats:</b> minst 10 % av priset måste vara eget kapital (bolånetaket höjdes 2025 så att max 90 % får lånas — tidigare 85 %).</li>
+        <li><b>Amorteringskrav:</b> lån över 70 % av värdet amorteras 2 %/år, 50–70 % amorteras 1 %/år. Hög skuldkvot (lån &gt; 4,5× årsinkomst) ger +1 % extra.</li>
+        <li><b>Kalkylränta:</b> banken stresstestar er ekonomi mot en betydligt högre ränta än dagens (ofta 6–8 %). Räkna själva på samma sätt.</li>
+        <li><b>Glöm inte löpande kostnader:</b> månadsavgift, drift, el, försäkring, underhåll och eventuell ränteuppgång.</li>
+      </ul>` },
+  { emoji:'📄', title:'2. Granska bostadsrättsföreningen',
+    body:`<p>Köper ni en bostadsrätt köper ni en andel i en förening — föreningens ekonomi blir er ekonomi.</p>
+      <ul>
+        <li><b>Årsredovisningen:</b> titta på skuldsättning per kvm, kassaflöde och om avgifterna täcker kostnaderna. Skuld över ca 15 000 kr/kvm är en varningssignal.</li>
+        <li><b>Underhållsplan:</b> finns avsatta pengar för stambyte, tak, fasad, hiss? Ett stambyte kan höja avgiften rejält.</li>
+        <li><b>Stadgar:</b> tillåts uthyrning i andra hand, husdjur, renovering? Andelstal och vad avgiften inkluderar.</li>
+        <li><b>Äkta vs oäkta förening:</b> en "oäkta" förening kan ge sämre skattevillkor — fråga mäklaren.</li>
+        <li><b>Stämningar/tvister</b> och planerade avgiftshöjningar — fråga rakt ut.</li>
+      </ul>` },
+  { emoji:'🔍', title:'3. På visningen',
+    body:`<p>Var systematiska — använd <b>checklistan</b> på varje visning. Det viktigaste:</p>
+      <ul>
+        <li>Fukt och lukt i badrum, kök, källare och vid fönster.</li>
+        <li>Vattentryck, avlopp och ventilation — testa kranar och spola.</li>
+        <li>Väderstreck och ljusinsläpp vid olika tider på dygnet.</li>
+        <li>Ljudnivå från grannar, trapphus och gata.</li>
+        <li>Skick på fönster, vitvaror, el och eventuell egen värmekälla.</li>
+        <li>Förråd, tvättstuga, cykelrum, parkering/laddstolpe.</li>
+        <li>Ta egna bilder och anteckna direkt — minnet sviker efter tre visningar.</li>
+      </ul>` },
+  { emoji:'🔨', title:'4. Budgivning — reglerna',
+    body:`<p>Budgivning i Sverige är <b>inte reglerad i lag</b>. Det finns ingen bestämd form och säljaren är inte tvungen att sälja till högstbjudande.</p>
+      <ul>
+        <li>Buden är <b>inte bindande</b> förrän köpekontraktet är påskrivet — vem som helst kan dra sig ur innan dess.</li>
+        <li>Mäklaren måste föra en <b>anbudsförteckning</b> som ni har rätt att se efter avslutad affär.</li>
+        <li>Det finns <b>ingen ångerrätt</b> efter att kontraktet skrivits — då är ni bundna.</li>
+        <li>Sätt en tydlig <b>smärtgräns</b> tillsammans i förväg och håll er till den.</li>
+        <li>Var beredd på "dold" budgivning — ni ser inte alltid övriga budgivare.</li>
+      </ul>` },
+  { emoji:'🛡️', title:'5. Undersökningsplikt & dolda fel',
+    body:`<p>Som köpare har ni en långtgående <b>undersökningsplikt</b>. Det ni borde ha upptäckt vid en noggrann undersökning kan ni inte klaga på i efterhand.</p>
+      <ul>
+        <li><b>Villa/hus:</b> anlita gärna en <b>besiktningsman</b> före köp. Ansvaret för dolda fel är större vid husköp (säljaren ansvarar i upp till 10 år för verkligt dolda fel).</li>
+        <li><b>Bostadsrätt:</b> säljarens felansvar är mer begränsat — desto viktigare att ni själva granskar noga.</li>
+        <li>Ställ frågor skriftligt och spara svaren. Det säljaren lovar muntligt är svårt att bevisa.</li>
+        <li>Överväg en <b>dolda fel-försäkring</b> (gäller främst hus).</li>
+      </ul>` },
+  { emoji:'✍️', title:'6. Kontrakt & tillträde',
+    body:`<p>När ni är överens skrivs köpekontraktet — det är då affären blir bindande.</p>
+      <ul>
+        <li><b>Handpenning</b> på vanligen 10 % betalas vid kontrakt, ofta till mäklarens klientmedelskonto.</li>
+        <li>Ni kan lägga in <b>villkor/förbehåll</b> i kontraktet, t.ex. besiktningsklausul eller "med förbehåll för lånelöfte".</li>
+        <li><b>Tillträdesdagen:</b> resten av köpeskillingen betalas, ni får nycklarna och en <b>likvidavräkning</b> görs (avgifter/kostnader fördelas).</li>
+        <li>För bostadsrätt krävs att föreningen <b>godkänner er som medlemmar</b>.</li>
+        <li>Teckna <b>hemförsäkring</b> (+ villaförsäkring för hus) från tillträdesdagen.</li>
+      </ul>` },
+  { emoji:'🏡', title:'7. Bostadsrätt vs villa',
+    body:`<ul>
+        <li><b>Bostadsrätt:</b> ni äger andel i förening, betalar månadsavgift, föreningen sköter yttre underhåll. Mindre eget ansvar men beroende av föreningens ekonomi.</li>
+        <li><b>Villa/radhus (äganderätt):</b> ni äger fastigheten själva, betalar <b>fastighetsavgift</b> i stället för avgift, men ansvarar för allt underhåll. Ofta <b>pantbrev</b> och lagfart att hålla koll på.</li>
+        <li><b>Lagfart & stämpelskatt:</b> vid husköp tillkommer lagfartskostnad (stämpelskatt 1,5 % av priset) + ev. pantbrevskostnad (2 %). Budgetera för det.</li>
+      </ul>` },
+  { emoji:'🧾', title:'8. Skatt & avdrag',
+    body:`<ul>
+        <li><b>Ränteavdrag:</b> 30 % av räntekostnaderna upp till 100 000 kr/person, 21 % på belopp däröver.</li>
+        <li><b>Vinstskatt:</b> 22 % på reavinsten när ni säljer i framtiden. Spara alla kvitton på renoveringar — de kan minska vinsten.</li>
+        <li><b>Uppskov:</b> vid köp av ny bostad kan vinstskatten ofta skjutas upp.</li>
+        <li><b>ROT-avdrag</b> kan sänka kostnaden för vissa renoveringar efter inflytt.</li>
+      </ul>` },
+];
+
+function renderGuide(){
+  const el = document.getElementById('guide-accordion');
+  if(el.dataset.built) return;
+  el.innerHTML = GUIDE_SECTIONS.map((s,i)=>`
+    <details class="acc" ${i===0?'open':''}>
+      <summary>
+        <span class="acc-emoji">${s.emoji}</span>
+        <span class="acc-title">${s.title}</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="acc-body">${s.body}</div>
+    </details>`).join('');
+  el.dataset.built = '1';
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const SUBTITLES = { checklist:'Checklista för visning', guide:'Inför köpet' };
+function setPage(page){
+  ['checklist','guide'].forEach(p=>{
+    document.getElementById('page-'+p).classList.toggle('active', p===page);
+    document.getElementById('tab-'+p).classList.toggle('active', p===page);
+  });
+  document.getElementById('head-sub').textContent = SUBTITLES[page];
+  if(page==='guide') renderGuide();
+  window.scrollTo({top:0});
+  history.replaceState(null,'','#'+page);
+}
+
+/* ---------- init ---------- */
+renderChecklist();
+const start = location.hash.replace('#','');
+setPage(start==='guide' ? 'guide' : 'checklist');
+</script>
 </body>
 </html>

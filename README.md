@@ -1,39 +1,37 @@
 # Husletande 🏡
 
-En privat husletarapp för ett par som söker bostad i Sverige. Allt samlat på ett ställe — objekt, betyg, jämförelser, budlogg och beslutsstöd — utan koppling till Hemnet eller externa tjänster. All data sparas lokalt i webbläsaren (`localStorage`).
+En enkel, mobilanpassad webbapp med två sidor som stöd när ni letar bostad i Sverige:
+
+1. **Checklista för visning** — viktiga saker att kolla på medan ni går runt på en visning. Bocka av punkterna, lägg till egna, och nollställ inför nästa visning.
+2. **Inför köpet** — råd, regler och saker att tänka på vid bostadsköp (ekonomi, förening, budgivning, undersökningsplikt, kontrakt, skatt m.m.).
+
+Allt ligger i en enda fil ([`index.html`](index.html)) — ingen server, inget byggsteg, inga externa beroenden utöver Google Fonts. Det du bockar av i checklistan sparas lokalt i webbläsaren (`localStorage`), så inget skickas någonstans.
 
 ## Använda appen
 
-Öppna [`husletande.html`](husletande.html) direkt i webbläsaren. Inga byggsteg, ingen server krävs.
+Öppna [`index.html`](index.html) direkt i webbläsaren, eller publicera den på GitHub Pages (se nedan) och öppna den på mobilen under visningen.
 
-## Funktioner
+Designen är **mobile first** — gjord för att hållas i handen på en visning — men fungerar lika bra på surfplatta och dator.
 
-- **Objektlista** med snabböversikt (adress, pris, storlek, betyg, status) samt filter och sortering.
-- **Snabb-tillägg** för att fånga ett objekt på sekunder, och **"Klistra in & tolka"** som läser ut fält ur en inklistrad annonstext (Hemnet/Booli) — helt lokalt.
-- **Detaljvy** med all fakta: pris (utgångs-/slutpris), kvm, rum, våning, byggår, avgift, drift, bostadsrättsförening, mäklare och visning.
-- **Betygsättning** per partner i fem kategorier (läge, skick, planlösning, pris/värde, potential) med aggregerat gemensamt betyg.
-- **Jämförelsevy** sida vid sida för 2–4 objekt.
-- **Kommentarer** per objekt med avsändare och tidsstämpel.
-- **Checklista** inför visning, förifylld och kompletterbar.
-- **Budlogg** med budrundor, tidpunkt och motbud.
-- **Decision board** med de tre högst betygsatta aktiva objekten.
-- **Inför köpet** — råd, regler och saker att tänka på vid bostadsköp i Sverige.
+## Publicera på GitHub Pages
 
-## Dela mellan enheter
+Eftersom appen är en enda statisk fil passar GitHub Pages perfekt:
 
-Appens data ligger i webbläsarens `localStorage` på varje enhet — den följer alltså **inte** automatiskt med när du klonar repot på en annan dator. För att flytta över era objekt:
+1. Pusha koden till ett GitHub-repo (filen måste heta `index.html` och ligga i repots rot — det gör den).
+2. Gå till **Settings → Pages** i repot.
+3. Under **Build and deployment → Source**, välj **Deploy from a branch**.
+4. Välj branchen `main` och mappen `/ (root)`, klicka **Save**.
+5. Efter en stund nås appen på `https://<ditt-användarnamn>.github.io/<repo-namn>/`.
 
-1. **Inställningar → Exportera all data (JSON)** på den enhet som har datan.
-2. Flytta filen till den andra enheten (mejl, molnlagring etc.).
-3. **Inställningar → Importera data (JSON)** och välj *Slå ihop* (synkar) eller *Ersätt allt*.
-
-Repot innehåller alltså själva appen; den personliga datan flyttar du via export/import.
+Spara den adressen som genväg på mobilens hemskärm så öppnas checklistan som en app.
 
 ## Utveckling
 
-Förhandsgranskning via en enkel statisk server:
+Förhandsgranska lokalt med valfri statisk server:
 
 ```bash
 python -m http.server 8765
-# öppna http://localhost:8765/husletande.html
+# öppna http://localhost:8765/
 ```
+
+All layout och logik finns i [`index.html`](index.html): checklistans punkter ligger i `CHECKLIST`-arrayen och köpguiden i `GUIDE_SECTIONS` — redigera dem direkt i filen för att ändra innehållet.
