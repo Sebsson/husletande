@@ -57,6 +57,19 @@
   .tip svg{flex-shrink:0;margin-top:1px}
   .tip b{color:#fff}
 
+  /* ---------- visit meta + export ---------- */
+  .visit-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .meta-input{flex:1 1 160px;min-width:0;background:var(--card);border:1px solid var(--sand);
+    border-radius:12px;padding:11px 13px;font-size:15px;font-family:inherit;color:var(--ink)}
+  .meta-input::placeholder{color:color-mix(in srgb,var(--muted) 70%,transparent)}
+  .meta-input:focus{outline:none;border-color:var(--forest);box-shadow:0 0 0 3px rgba(31,58,46,.15)}
+  .meta-date{flex:0 1 150px}
+  .export-btn{flex:0 0 auto;display:flex;align-items:center;gap:7px;background:var(--forest);
+    color:var(--cream);border:none;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:600;
+    font-family:inherit;cursor:pointer;white-space:nowrap}
+  .export-btn:hover{background:var(--forest-light)}
+  .export-btn svg{width:17px;height:17px}
+
   /* ---------- progress ---------- */
   .progress-wrap{position:sticky; top:calc(env(safe-area-inset-top) + 69px); z-index:10;
     background:var(--cream); padding:10px 0 12px; margin-bottom:4px}
@@ -204,6 +217,40 @@
     .guide-cols .panel:first-child{margin-top:0}
     .page-head h2{font-size:32px}
   }
+
+  /* ---------- print / PDF-export ---------- */
+  #print-view{display:none}
+  @media print{
+    @page{margin:14mm}
+    html,body{background:#fff}
+    body{padding:0;color:#1a1a1a;font-size:11pt}
+    header, nav.tabs, .tip, .progress-wrap, .visit-bar, .add-row,
+    .item-del, .info-btn, .sheet-backdrop, #page-checklist, #page-guide{display:none !important}
+    main{max-width:none;margin:0;padding:0}
+    #print-view{display:block !important;font-family:'Inter',system-ui,sans-serif}
+    .pv-head{border-bottom:2px solid #1F3A2E;padding-bottom:10px;margin-bottom:16px}
+    .pv-head h1{font-family:'Fraunces',Georgia,serif;font-size:20pt;color:#1F3A2E;margin:0}
+    .pv-meta{font-size:12pt;margin-top:6px;font-weight:600;color:#1a1a1a}
+    .pv-dim{color:#888;font-weight:400}
+    .pv-summary{font-size:10pt;color:#555;margin-top:3px}
+    .pv-group{margin-bottom:14px;break-inside:avoid;page-break-inside:avoid}
+    .pv-group h2{font-family:'Fraunces',Georgia,serif;font-size:13pt;color:#1F3A2E;
+      margin:0 0 6px;border-bottom:1px solid #ddd;padding-bottom:3px}
+    .pv-group ul{list-style:none;margin:0;padding:0}
+    .pv-item{display:flex;gap:10px;align-items:flex-start;padding:4px 0;
+      break-inside:avoid;page-break-inside:avoid}
+    .pv-item + .pv-item{border-top:1px solid #f0f0f0}
+    .pv-badge{flex:0 0 auto;min-width:52px;text-align:center;font-size:8.5pt;font-weight:700;
+      padding:2px 6px;border-radius:4px;border:1px solid #ccc;color:#555;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .st-ok .pv-badge{background:#1F3A2E;border-color:#1F3A2E;color:#fff}
+    .st-prob .pv-badge{background:#B5694A;border-color:#B5694A;color:#fff}
+    .pv-text{flex:1}
+    .st-none .pv-text{color:#777}
+    .pv-note{display:block;font-size:9.5pt;color:#444;margin-top:3px;
+      padding-left:10px;border-left:2px solid #B5694A}
+    .pv-foot{margin-top:18px;font-size:8.5pt;color:#999;text-align:center}
+  }
 </style>
 </head>
 <body>
@@ -231,6 +278,15 @@
     <div class="tip">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.5.4.8 1 .9 1.6l.1.7h6l.1-.7c.1-.6.4-1.2.9-1.6A7 7 0 0 0 12 2z"/></svg>
       <span>Ta egna bilder och anteckna direkt — <b>minnet sviker efter tre visningar</b>. Fråga rakt ut om sådant du undrar över; mäklaren måste svara sanningsenligt.</span>
+    </div>
+
+    <div class="visit-bar">
+      <input id="meta-address" class="meta-input" placeholder="Adress / objekt (valfritt)" autocomplete="off">
+      <input id="meta-date" class="meta-input meta-date" type="date" aria-label="Visningsdatum">
+      <button class="export-btn" type="button" onclick="exportPdf()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Dela / PDF
+      </button>
     </div>
 
     <div class="progress-wrap">
@@ -323,6 +379,9 @@
     <button id="sheet-guide" class="sheet-guide" type="button" hidden></button>
   </div>
 </div>
+
+<!-- ============ PRINT-VY (PDF-export, syns bara vid utskrift) ============ -->
+<div id="print-view"></div>
 
 <script>
 /* ============================================================
@@ -425,6 +484,7 @@ function loadState(){
   try { s = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ s = {}; }
   s.status = s.status || {};               // { id: 'ok' | 'problem' }
   s.notes  = s.notes  || {};               // { id: 'anteckning' }
+  s.meta   = s.meta   || {};               // { address, date }
   s.custom = Array.isArray(s.custom) ? s.custom : [];
   if(s.checked){                           // migrera gammalt boolean-fält (bockad → 'ok')
     for(const k in s.checked){ if(s.checked[k] && !s.status[k]) s.status[k] = 'ok'; }
@@ -540,6 +600,68 @@ function resetChecklist(){
   saveState();
   renderChecklist();
 }
+
+/* ============================================================
+   VISNINGS-META (adress + datum) & PDF-EXPORT
+   ============================================================ */
+function initMeta(){
+  const a = document.getElementById('meta-address');
+  const d = document.getElementById('meta-date');
+  a.value = store.meta.address || '';
+  d.value = store.meta.date || new Date().toISOString().slice(0,10);  // default: idag
+  a.addEventListener('input',  ()=>{ store.meta.address = a.value; saveState(); });
+  d.addEventListener('change', ()=>{ store.meta.date    = d.value; saveState(); });
+}
+
+/* Bygg en ren utskriftsvy av hela listan med status + anteckningar */
+function buildPrintView(){
+  const groups = allGroups();
+  let total=0, done=0, problems=0;
+  const groupsHtml = groups.map((g, gi)=>{
+    const isCustom = !!g.custom;
+    const items = isCustom
+      ? g.items.map(it=>({ id:it.id, text:it.text }))
+      : g.items.map((it,ii)=>({ id:'g'+gi+'_'+ii, text:it.t }));
+    if(!items.length) return '';
+    const rows = items.map(it=>{
+      total++;
+      const st = store.status[it.id];
+      if(st) done++;
+      if(st==='problem') problems++;
+      const note  = store.notes[it.id] || '';
+      const label = st==='ok' ? 'OK' : st==='problem' ? 'Bevaka' : '–';
+      const cls   = st==='ok' ? 'st-ok' : st==='problem' ? 'st-prob' : 'st-none';
+      return `<li class="pv-item ${cls}">
+        <span class="pv-badge">${label}</span>
+        <span class="pv-text">${esc(it.text)}${note?`<span class="pv-note">${esc(note)}</span>`:''}</span>
+      </li>`;
+    }).join('');
+    return `<section class="pv-group">
+      <h2>${g.emoji} ${esc(g.title)}</h2>
+      <ul>${rows}</ul>
+    </section>`;
+  }).join('');
+
+  const addr = (document.getElementById('meta-address').value || '').trim();
+  const date = document.getElementById('meta-date').value || '';
+  const metaLine = (addr ? esc(addr) : '<span class="pv-dim">(ingen adress angiven)</span>')
+    + (date ? ' · ' + esc(date) : '');
+  document.getElementById('print-view').innerHTML = `
+    <div class="pv-head">
+      <h1>Husletande — checklista visning</h1>
+      <div class="pv-meta">${metaLine}</div>
+      <div class="pv-summary">${done} av ${total} ifyllda${problems?` · ${problems} att bevaka`:''}</div>
+    </div>
+    ${groupsHtml}
+    <div class="pv-foot">Skapad med Husletande</div>`;
+}
+
+function exportPdf(){
+  buildPrintView();
+  window.print();
+}
+/* Fånga även webbläsarens egen utskrift (Ctrl/Cmd+P) */
+window.addEventListener('beforeprint', buildPrintView);
 
 /* ============================================================
    INFO-SHEET — längre förklaring + länk till guideavsnitt
@@ -691,6 +813,7 @@ function setPage(page){
 
 /* ---------- init ---------- */
 renderChecklist();
+initMeta();
 const start = location.hash.replace('#','');
 setPage(start==='guide' ? 'guide' : 'checklist');
 </script>
