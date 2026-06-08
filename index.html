@@ -88,7 +88,13 @@
   .chk-ok.is-on{background:var(--forest);border-color:var(--forest);color:#fff}
   .chk-prob.is-on{background:var(--clay);border-color:var(--clay);color:#fff}
   .item-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-  .item-text{font-size:15px;line-height:1.4;padding-top:3px}
+  .item-textrow{display:flex;gap:8px;align-items:flex-start}
+  .item-text{font-size:15px;line-height:1.4;padding-top:3px;flex:1;min-width:0}
+  .info-btn{flex-shrink:0;width:22px;height:22px;margin-top:2px;border-radius:99px;
+    border:1.5px solid var(--sand);background:var(--card);color:var(--muted);
+    font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:14px;font-weight:600;line-height:1;
+    cursor:pointer;transition:.13s;display:flex;align-items:center;justify-content:center}
+  .info-btn:hover,.info-btn:focus-visible{border-color:var(--clay);color:var(--clay);outline:none}
   .item.is-ok .item-text{color:var(--muted)}
   .chk-note{width:100%;background:none;border:none;border-bottom:1px dashed transparent;
     font-family:inherit;font-size:13px;color:var(--muted);padding:2px 0;outline:none}
@@ -152,6 +158,32 @@
   .links a{text-decoration:underline}
   .links a:hover{color:var(--clay)}
   .disclaimer{font-size:12.5px;color:var(--muted);margin-top:22px;line-height:1.5}
+
+  /* ---------- info-sheet (popup med förklaring) ---------- */
+  .sheet-backdrop{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;
+    background:rgba(42,40,35,0);transition:background .22s ease}
+  .sheet-backdrop.open{background:rgba(42,40,35,.45)}
+  .sheet-backdrop[hidden]{display:none}
+  .sheet{width:100%;max-width:560px;max-height:86vh;overflow-y:auto;
+    background:var(--card);border-radius:22px 22px 0 0;
+    padding:8px 22px calc(26px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 30px rgba(42,40,35,.18);position:relative;
+    transform:translateY(100%);transition:transform .24s cubic-bezier(.22,.61,.36,1)}
+  .sheet-backdrop.open .sheet{transform:translateY(0)}
+  .sheet::before{content:"";display:block;width:38px;height:4px;border-radius:99px;
+    background:var(--sand);margin:8px auto 14px}
+  .sheet-close{position:absolute;top:14px;right:16px;width:32px;height:32px;border-radius:99px;
+    border:none;background:var(--cream);color:var(--muted);font-size:22px;line-height:1;cursor:pointer}
+  .sheet-close:hover{color:var(--clay)}
+  #sheet-title{font-size:19px;font-weight:600;padding-right:38px;margin-bottom:10px}
+  .sheet-body{font-size:14.5px;line-height:1.6;color:var(--ink)}
+  .sheet-body p{margin:0}
+  .sheet-guide{margin-top:18px;width:100%;background:color-mix(in srgb,var(--forest) 8%,transparent);
+    border:1px solid color-mix(in srgb,var(--forest) 22%,transparent);border-radius:13px;
+    padding:12px 14px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--forest);
+    cursor:pointer;text-align:left;transition:.13s}
+  .sheet-guide:hover{background:color-mix(in srgb,var(--forest) 14%,transparent)}
+  .sheet-guide[hidden]{display:none}
 
   /* ---------- bottom nav ---------- */
   nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;
@@ -282,57 +314,105 @@
   </button>
 </nav>
 
+<!-- ============ INFO-SHEET (popup) ============ -->
+<div id="info-sheet" class="sheet-backdrop" hidden onclick="if(event.target===this)closeInfo()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <button class="sheet-close" aria-label="Stäng" onclick="closeInfo()">&times;</button>
+    <h3 id="sheet-title"></h3>
+    <div id="sheet-body" class="sheet-body"></div>
+    <button id="sheet-guide" class="sheet-guide" type="button" hidden></button>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    CHECKLIST DATA (default) — saker att kolla på en visning
    ============================================================ */
+/* Varje punkt: t = text, i = längre förklaring (visas i popup), g = guideavsnitt att länka till (index i GUIDE_SECTIONS) */
 const CHECKLIST = [
   { emoji:'🌤️', title:'Läge & första intryck', items:[
-    'Vilket väderstreck — sol på tomt, uteplats och inne?',
-    'Ljusinsläpp vid den tid på dygnet ni faktiskt är hemma',
-    'Ljudnivå från grannar, gata och trafik',
-    'Utsikt och insyn från fönster och tomt',
-    'Närhet till kollektivtrafik, affärer och skola',
+    { t:'Vilket väderstreck — sol på tomt, uteplats och inne?',
+      i:'Sol på rätt ställen är nästan omöjligt att ändra i efterhand. Kolla med en kompass-app var söder ligger: morgonsol i öster, kvällssol i väster. Vill ni sitta i solen på uteplatsen efter jobbet vill ni ha den åt väster eller sydväst.' },
+    { t:'Ljusinsläpp vid den tid på dygnet ni faktiskt är hemma',
+      i:'Ett hus kan kännas mörkt även en solig dag om fönstren är små eller skuggas av träd och grannhus. Försök besöka vid den tid ni faktiskt är hemma, och fråga hur det ser ut under vinterhalvåret när solen står lågt.' },
+    { t:'Ljudnivå från grannar, gata och trafik',
+      i:'Lyssna efter trafik, tåg, industri och grannar. Buller är svårt att åtgärda. Öppna ett fönster och stå tyst en stund — visningar hålls ofta mitt på dagen då det är som lugnast.' },
+    { t:'Utsikt och insyn från fönster och tomt',
+      i:'Tänk på insyn från grannar och förbipasserande, särskilt mot uteplats och sovrum. Kolla också om det finns obebyggd mark intill som kan bebyggas och förändra både utsikt och insyn.' },
+    { t:'Närhet till kollektivtrafik, affärer och skola',
+      i:'Restid säger mer än avstånd på kartan. Testa gärna vägen till jobb, skola och affär vid rusningstid. Kolla turtätheten för kollektivtrafiken — inte bara att en hållplats finns.' },
   ]},
   { emoji:'🏠', title:'Tak, fasad & grund', items:[
-    'Takets ålder och skick — när lades det om senast?',
-    'Fasad och fönster — skick, isolering, kondens mellan glasen?',
-    'Fukt och dränering i grund, källare eller krypgrund',
-    'Fläckar eller bubblor på väggar/tak (tecken på vattenskada)',
-    'Sprickor i grund/fasad eller tecken på sättningar',
+    { t:'Takets ålder och skick — när lades det om senast?',
+      i:'Taket är en av de dyraste posterna i ett hus — en omläggning kostar ofta 150 000–400 000 kr. Fråga om material och vilket år det lades om. Tegel håller längst (50+ år), betong och plåt något kortare, papp/shingel kortast. Titta efter glipor, mossa och spruckna pannor.', g:1 },
+    { t:'Fasad och fönster — skick, isolering, kondens mellan glasen?',
+      i:'Kontrollera färgsläpp, rötskador (peta försiktigt i träfasad) och sprickor i puts. Imma eller kondens mellan glasrutorna betyder att fönstrets isolerruta är trasig. Fönsterbyte och fasadrenovering är dyra åtgärder.', g:1 },
+    { t:'Fukt och dränering i grund, källare eller krypgrund',
+      i:'Dräneringen leder bort vatten från grunden och håller ungefär 30–50 år. Dålig dränering ger fukt i källare/grund och är dyrt att åtgärda (ofta 150 000 kr och uppåt). Titta efter fuktränder, saltutfällningar och avflagnad färg lågt på källarväggarna.', g:1 },
+    { t:'Fläckar eller bubblor på väggar/tak (tecken på vattenskada)',
+      i:'Missfärgningar, bubblor eller flagnande färg på vägg och tak är ofta spår av en vatten- eller fuktskada. Fråga vad de beror på, om de åtgärdats och om det finns kvitto på jobbet.' },
+    { t:'Sprickor i grund/fasad eller tecken på sättningar',
+      i:'Hårfina sprickor är normalt. Breda, trappstegsformade eller växande sprickor i grund och fasad kan tyda på sättningar och är allvarligare. Fråga om sprickorna bevakats över tid.' },
   ]},
   { emoji:'💧', title:'Skick & fukt inne', items:[
-    'Fukt, mögel eller lukt i badrum, kök, källare och tvättstuga',
-    'Skick på golv, väggar, lister och dörrar',
-    'Ventilation — drar det, känns luften instängd?',
-    'Radonmätning gjord — och vad visade den?',
+    { t:'Fukt, mögel eller lukt i badrum, kök, källare och tvättstuga',
+      i:'Lukten avslöjar mycket — en instängd jordkällar- eller mögellukt kan tyda på fuktproblem. Känn efter i badrum, källare och tvättstuga. Fukt är ett av de vanligaste och dyraste dolda felen.', g:4 },
+    { t:'Skick på golv, väggar, lister och dörrar',
+      i:'Gå runt och känn efter sviktande eller lutande golv (en kula eller ett vattenpass avslöjar lutning) och sneda dörrkarmar — kan tyda på sättningar. Notera slitage som ni behöver renovera direkt.' },
+    { t:'Ventilation — drar det, känns luften instängd?',
+      i:'Dålig ventilation ger instängd luft och ökar risken för fukt och mögel. Fråga om huset har självdrag, frånluftsfläkt eller FTX (med värmeåtervinning). Känn om det drar kallt vid fönster och ventiler.' },
+    { t:'Radonmätning gjord — och vad visade den?',
+      i:'Radon är en osynlig, luktfri gas som ökar risken för lungcancer. Riktvärdet inomhus är 200 Bq/m³. Fråga om en mätning gjorts — en korrekt långtidsmätning tar minst två månader under vinterhalvåret. Åtgärder finns men kostar.' },
   ]},
   { emoji:'🚿', title:'Kök & badrum', items:[
-    'Testa vattentrycket i dusch och kranar',
-    'Spola i toaletten och kontrollera avlopp',
-    'Ålder och skick på vitvaror',
-    'När renoverades badrummet senast — finns tätskiktsintyg?',
-    'Kvitton/intyg på senaste renoveringar',
+    { t:'Testa vattentrycket i dusch och kranar',
+      i:'Öppna flera kranar samtidigt och kör duschen — svagt tryck kan bero på gamla, igenkalkade rör. Lyssna efter konstiga ljud och titta efter missfärgat vatten när det stått stilla.' },
+    { t:'Spola i toaletten och kontrollera avlopp',
+      i:'Spola i toaletten och låt vatten rinna i handfat och golvbrunn. Långsamt avlopp eller bubblande ljud kan tyda på stopp eller dåligt fall på rören.' },
+    { t:'Ålder och skick på vitvaror',
+      i:'Fråga ålder på spis, ugn, kyl/frys, disk- och tvättmaskin — och om de ingår i köpet. Vitvaror håller typiskt 10–15 år, så räkna med utbyte om de är gamla.' },
+    { t:'När renoverades badrummet senast — finns tätskiktsintyg?',
+      i:'Badrum är dyra att renovera (ofta 150 000 kr och uppåt) och en vanlig källa till fuktskador. Fråga vilket år det gjordes och om det finns kvalitetsdokument eller tätskiktsintyg enligt branschreglerna (BKR/GVK). Ett badrum med trasigt eller saknat tätskikt kan behöva göras om helt.', g:1 },
+    { t:'Kvitton/intyg på senaste renoveringar',
+      i:'Spara säljarens kvitton och intyg på renoveringar. De visar att jobbet gjorts fackmässigt och kan dessutom minska er framtida vinstskatt den dag ni själva säljer.' },
   ]},
   { emoji:'⚙️', title:'Teknik & installationer', items:[
-    'Värmesystem (värmepump/fjärrvärme/el) — typ, ålder, driftkostnad',
-    'Elsystem — ålder, jordfelsbrytare och elcentral',
-    'Vatten & avlopp — kommunalt eller enskilt (egen brunn/avlopp)?',
-    'Energideklaration och uppvärmningskostnad per år',
+    { t:'Värmesystem (värmepump/fjärrvärme/el) — typ, ålder, driftkostnad',
+      i:'Uppvärmningen står för en stor del av driftkostnaden. Vanligast är berg-/luftvärmepump, fjärrvärme eller direktverkande el (dyrast). Fråga om typ, ålder och årlig kostnad. En värmepump håller ungefär 15–20 år.', g:1 },
+    { t:'Elsystem — ålder, jordfelsbrytare och elcentral',
+      i:'Gammal el kan vara en brand- och säkerhetsrisk. Kolla att det finns jordfelsbrytare och en modern elcentral — ett gammalt proppskåp med skruvsäkringar är ett ålderstecken. Fråga om elen setts över av behörig elektriker.' },
+    { t:'Vatten & avlopp — kommunalt eller enskilt (egen brunn/avlopp)?',
+      i:'Stor skillnad mellan kommunalt och enskilt. Ett enskilt avlopp (egen anläggning) måste uppfylla dagens miljökrav — annars kan kommunen kräva en uppgradering som kostar 100 000–200 000 kr. Har huset egen brunn: fråga om vattenkvalitet och kapacitet, särskilt sommartid.', g:1 },
+    { t:'Energideklaration och uppvärmningskostnad per år',
+      i:'Energideklarationen är lagstadgad och ska finnas vid försäljning. Den visar energiklass (A–G) och beräknad energianvändning — en bra fingervisning om driftkostnaden och vilka förbättringar som kan löna sig.', g:1 },
   ]},
   { emoji:'🌳', title:'Garage, förråd & tomt', items:[
-    'Garage, carport och förråd — finns och skick?',
-    'Parkering / laddstolpe för elbil',
-    'Tomtens storlek, gränser, häckar och staket',
-    'Snöröjning, sophämtning och vägunderhåll (samfällighet/vägförening?)',
+    { t:'Garage, carport och förråd — finns och skick?',
+      i:'Kolla skicket och att byggnaderna är bygglovade. Ett garage med fukt eller dåligt tak är ännu en underhållspost. Notera förvaringsutrymme — det underskattas ofta.' },
+    { t:'Parkering / laddstolpe för elbil',
+      i:'Finns plats att ladda elbil, eller går det att dra fram? En laddbox kräver tillräcklig elkapacitet och kostar en slant att installera. Kolla också gäst- och gatuparkering.' },
+    { t:'Tomtens storlek, gränser, häckar och staket',
+      i:'Be att få se tomtkartan och fråga var gränserna faktiskt går — häckar och staket står inte alltid rätt. Stor tomt betyder mer skötsel. Kolla efter träd som kan behöva tas ner (kan kräva tillstånd från kommunen).' },
+    { t:'Snöröjning, sophämtning och vägunderhåll (samfällighet/vägförening?)',
+      i:'Vid hus sköter ni oftast själva snöröjning och gräsklippning. Ingår vägen i en samfällighet eller vägförening tillkommer en årlig avgift och ett gemensamt ansvar. Fråga vad som gäller och vad det kostar.', g:6 },
   ]},
   { emoji:'🗣️', title:'Frågor till mäklare/säljare', items:[
-    'Fråga om dolda fel och tidigare problem',
-    'Varför säljer de — och hur länge har de bott här?',
-    'Bygglov för till-/ombyggnader (altan, inglasning, attefall)?',
-    'Servitut, samfällighet eller planerade byggen i närområdet?',
-    'Vad ingår i köpet (vitvaror, markis, förråd)?',
-    'Mobiltäckning och bredband/fiber',
+    { t:'Fråga om dolda fel och tidigare problem',
+      i:'Som köpare har ni en långtgående undersökningsplikt — det ni borde ha upptäckt kan ni inte klaga på efteråt. Säljaren ansvarar i upp till 10 år för verkligt dolda fel som ni inte kunnat se. Fråga rakt ut om kända fel och problem; mäklaren måste svara sanningsenligt.', g:4 },
+    { t:'Varför säljer de — och hur länge har de bott här?',
+      i:'Svaret kan avslöja mycket — återkommande problem, bråk med grannar eller planerade byggen i närområdet. En väldigt kort boendetid eller en rad tidigare ägare kan vara värt att fundera på.' },
+    { t:'Bygglov för till-/ombyggnader (altan, inglasning, attefall)?',
+      i:'Altan, inglasad uteplats, attefallshus och tillbyggnader ska vara bygglovade och slutbesiktigade. Ett svartbygge blir ert ansvar när ni köpt — kommunen kan kräva rättelse eller rivning. Be att få se beslut och ritningar.', g:1 },
+    { t:'Servitut, samfällighet eller planerade byggen i närområdet?',
+      i:'Ett servitut ger t.ex. en granne rätt att använda er väg eller brunn — eller tvärtom. Samfällighet innebär gemensamt ägd väg eller vatten med årlig avgift. Fråga vad som belastar fastigheten och kolla kommunens detaljplaner för området.', g:1 },
+    { t:'Vad ingår i köpet (vitvaror, markis, förråd)?',
+      i:'Vad som följer med (vitvaror, markiser, spabad, förråd, blomlådor) ska skrivas in i kontraktet. Det som inte räknas upp kan säljaren ta med sig. Reda ut detta innan budgivningen.' },
+    { t:'Mobiltäckning och bredband/fiber',
+      i:'Kolla mobiltäckningen på plats med er egen operatör, och vilken typ av bredband som finns — fiber, kabel eller bara mobilt. Att dra in fiber i efterhand kan vara dyrt eller omöjligt på vissa adresser.' },
+    { t:'Finns en överlåtelsebesiktning gjord — får ni se protokollet?',
+      i:'En överlåtelsebesiktning är en okulär (synlig) genomgång av huset utförd av en besiktningsman. Fråga om säljaren gjort en och be att få se protokollet — men läs det kritiskt, det täcker inte allt (t.ex. inte dolda installationer eller marken). Ni kan, och bör ofta, beställa en egen besiktning före köp och gärna gå med själva. Misstänker ni fukt eller takproblem — be om en utökad besiktning av just det.', g:4 },
+    { t:'Pantbrev & lagfart — vilka pantbrev finns, och hur ser kostnaden ut?',
+      i:'Lagfarten är det offentliga beviset på vem som äger fastigheten. Efter köpet ansöker ni om ny lagfart och betalar då stämpelskatt på 1,5 % av priset. Pantbrev använder banken som säkerhet för bolånet. Finns det redan pantbrev kan ni återanvända dem; behövs nya kostar de 2 % av beloppet i stämpelskatt. Fråga vilka pantbrev som finns så ni vet om en extra kostnad tillkommer utöver kontantinsatsen.', g:6 },
   ]},
 ];
 
@@ -369,7 +449,7 @@ function renderChecklist(){
   const el = document.getElementById('checklist');
   el.innerHTML = groups.map((g, gi)=>{
     const isCustom = !!g.custom;
-    const items = isCustom ? g.items : g.items.map((t, ii)=>({ id:'g'+gi+'_'+ii, text:t }));
+    const items = isCustom ? g.items : g.items.map((it, ii)=>({ id:'g'+gi+'_'+ii, text:it.t, info:it.i }));
     const done = items.filter(it=>store.status[it.id]).length;
     const rows = items.map(it=>{
       const st = store.status[it.id]; const note = store.notes[it.id] || '';
@@ -380,7 +460,10 @@ function renderChecklist(){
           <button type="button" class="chk-pill chk-prob ${st==='problem'?'is-on':''}" onclick="setStatus('${it.id}','problem')" title="Problem / att bevaka">!</button>
         </div>
         <div class="item-main">
-          <span class="item-text">${esc(it.text)}</span>
+          <div class="item-textrow">
+            <span class="item-text">${esc(it.text)}</span>
+            ${it.info?`<button type="button" class="info-btn" onclick="openInfo('${it.id}')" aria-label="Mer om: ${esc(it.text)}" title="Mer info">i</button>`:''}
+          </div>
           <input class="chk-note ${note?'has-val':''}" value="${esc(note)}" placeholder="Anteckning…" autocomplete="off"
             oninput="this.classList.toggle('has-val',!!this.value)" onchange="updateNote('${it.id}',this.value)">
         </div>
@@ -457,6 +540,46 @@ function resetChecklist(){
   saveState();
   renderChecklist();
 }
+
+/* ============================================================
+   INFO-SHEET — längre förklaring + länk till guideavsnitt
+   ============================================================ */
+function openInfo(id){
+  const m = /^g(\d+)_(\d+)$/.exec(id);
+  if(!m) return;
+  const item = (CHECKLIST[+m[1]] || {}).items?.[+m[2]];
+  if(!item || !item.i) return;
+  document.getElementById('sheet-title').textContent = item.t;
+  document.getElementById('sheet-body').innerHTML = '<p>' + esc(item.i) + '</p>';
+  const gb = document.getElementById('sheet-guide');
+  if(typeof item.g === 'number' && GUIDE_SECTIONS[item.g]){
+    gb.hidden = false;
+    gb.textContent = 'Läs mer i guiden: ' + GUIDE_SECTIONS[item.g].title + ' →';
+    gb.onclick = ()=>openGuideFromInfo(item.g);
+  } else { gb.hidden = true; gb.onclick = null; }
+  const bd = document.getElementById('info-sheet');
+  bd.hidden = false;
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(()=>bd.classList.add('open'));
+}
+function closeInfo(){
+  const bd = document.getElementById('info-sheet');
+  bd.classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(()=>{ bd.hidden = true; }, 240);
+}
+function openGuideFromInfo(gi){
+  closeInfo();
+  setPage('guide');
+  document.querySelectorAll('#guide-accordion details.acc').forEach((d,idx)=>{ d.open = (idx===gi); });
+  requestAnimationFrame(()=>{
+    const target = document.getElementById('g-sec-'+gi);
+    if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && !document.getElementById('info-sheet').hidden) closeInfo();
+});
 
 /* ============================================================
    GUIDE / INFÖR KÖPET
@@ -540,7 +663,7 @@ function renderGuide(){
   const el = document.getElementById('guide-accordion');
   if(el.dataset.built) return;
   el.innerHTML = GUIDE_SECTIONS.map((s,i)=>`
-    <details class="acc" ${i===0?'open':''}>
+    <details class="acc" id="g-sec-${i}" ${i===0?'open':''}>
       <summary>
         <span class="acc-emoji">${s.emoji}</span>
         <span class="acc-title">${s.title}</span>
